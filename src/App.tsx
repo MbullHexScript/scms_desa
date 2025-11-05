@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -9,6 +10,8 @@ import ComplaintDetail from './pages/ComplaintDetail';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminComplaintDetail from './pages/AdminComplaintDetail';
 import StatisticsPage from './pages/StatisticsPage';
+import ProfilePage from './pages/ProfilePage';
+import SettingsPage from './pages/SettingsPage';
 
 type Page =
   | 'landing'
@@ -19,6 +22,7 @@ type Page =
   | 'complaint-detail'
   | 'my-complaints'
   | 'settings'
+  | 'profile'
   | 'admin-dashboard'
   | 'all-complaints'
   | 'admin-complaint-detail'
@@ -26,7 +30,7 @@ type Page =
   | 'users';
 
 function AppContent() {
-  const { user, profile, loading } = useAuth();
+  const { user, loading, isAdmin } = useAuth();
   const [currentPage, setCurrentPage] = useState<Page>('landing');
   const [pageData, setPageData] = useState<unknown>(null);
 
@@ -39,10 +43,10 @@ function AppContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-16 w-16 border-b-2 border-emerald-500"></div>
-          <p className="text-gray-600 mt-4 text-lg">Memuat...</p>
+          <div className="inline-block animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500"></div>
+          <p className="text-gray-600 dark:text-gray-400 mt-4 text-lg">Memuat...</p>
         </div>
       </div>
     );
@@ -58,7 +62,15 @@ function AppContent() {
     return <LandingPage onNavigate={handleNavigate} />;
   }
 
-  if (profile?.role === 'admin') {
+  if (currentPage === 'profile') {
+    return <ProfilePage />;
+  }
+
+  if (currentPage === 'settings') {
+    return <SettingsPage />;
+  }
+
+  if (isAdmin) {
     if (currentPage === 'admin-complaint-detail' && pageData) {
       return (
         <AdminComplaintDetail
@@ -86,8 +98,7 @@ function AppContent() {
   }
   if (
     currentPage === 'my-complaints' ||
-    currentPage === 'dashboard' ||
-    currentPage === 'settings'
+    currentPage === 'dashboard'
   ) {
     return <UserDashboard onNavigate={handleNavigate} />;
   }
@@ -97,9 +108,11 @@ function AppContent() {
 
 function App() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 
